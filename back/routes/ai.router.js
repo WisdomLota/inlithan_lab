@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const aiService = require("../services/aiService");
 
-// Generate activity using AI
+// Generate activity (quiz, explanation, etc.)
 router.post("/generate", async (req, res) => {
-  const { prompt, type } = req.body;
-  // Call LLM API here (Gemini, Claude, etc.)
-  res.json({
-    success: true,
-    message: "AI generated activity",
-    data: { type, prompt, content: "Generated quiz or explanation..." }
-  });
+  try {
+    const { prompt, type, model } = req.body;
+    const result = await aiService.generateActivity(prompt, type, model);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 module.exports = router;
