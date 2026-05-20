@@ -1,19 +1,25 @@
 import React from "react";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+import Sidebar from "./components/sidebar";
+import AI from "./components/ai";
 import Activities from "./components/activities";
 import Courses from "./components/courses";
-import AI from "./components/ai";
 import Auth from "./components/auth";
 
-function App() {
+export default function App() {
   return (
-    <>
-      <h1>Inlihtan Labs</h1>
-      <Auth />
-      <Activities />
-      <Courses />
-      <AI />
-    </>
+    <BrowserRouter>
+    <div className="flex">
+      <Sidebar />
+      <main className="ml-64 p-6 flex-1">
+        <Routes>
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/ai" element={<AI />} />
+          <Route path="/auth" element={<Auth />} />
+        </Routes>
+      </main>
+    </div>
+    </BrowserRouter>
   );
 }
-
-export default App

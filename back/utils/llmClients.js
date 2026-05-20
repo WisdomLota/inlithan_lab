@@ -1,4 +1,5 @@
 const axios = require("axios");
+const {GoogleGenAI} = require("@google/genai")
 
 async function callLLM(prompt, model) {
   switch (model) {
@@ -15,12 +16,16 @@ async function callLLM(prompt, model) {
 
 // Example Gemini client
 async function callGemini(prompt) {
-  const res = await axios.post("https://api.gemini.com/v1/generate", {
-    prompt,
-  }, {
-    headers: { Authorization: `Bearer ${process.env.GEMINI_API_KEY}` }
-  });
-  return res.data;
+  const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY})
+
+  const res = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: prompt
+  })
+
+  console.log(res.text);
+
+  return res.text
 }
 
 // Example Claude client

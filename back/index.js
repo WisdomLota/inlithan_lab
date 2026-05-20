@@ -4,6 +4,10 @@ const app = express();
 
 app.use(express.json());
 
+const cors = require('cors')
+
+app.use(cors())
+
 // Import routers
 const activitiesRouter = require("./routes/activities.router");
 const coursesRouter = require("./routes/courses.router");

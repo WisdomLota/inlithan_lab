@@ -9,6 +9,7 @@ router.post("/generate", async (req, res) => {
     const result = await aiService.generateActivity(prompt, type, model);
     res.json({ success: true, data: result });
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ success: false, error: err.message });
   }
 });
