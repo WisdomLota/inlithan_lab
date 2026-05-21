@@ -1,12 +1,16 @@
 require("dotenv").config()
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const app = express();
 
 app.use(express.json());
 
-const cors = require('cors')
+const cors = require('cors');
 
-app.use(cors())
+app.use(cors());
+
+const upload = multer({ dest: "uploads/" });
 
 // Import routers
 const activitiesRouter = require("./routes/activities.router");

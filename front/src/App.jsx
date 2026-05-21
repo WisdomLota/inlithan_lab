@@ -5,6 +5,7 @@ import AI from "./components/ai";
 import Activities from "./components/activities";
 import Courses from "./components/courses";
 import Auth from "./components/auth";
+import UploadCoursework from "./components/uploadCoursework";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/ai" element={<AI />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/upload" element={<UploadCoursework />} />
         </Routes>
       </main>
     </div>
