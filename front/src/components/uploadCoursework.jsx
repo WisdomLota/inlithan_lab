@@ -6,6 +6,7 @@ export default function UploadCoursework() {
   const [loading, setLoading] = useState(false);
 
   const handleUpload = async () => {
+    console.log("Upload button clicked", file);
     if (!file) return;
     setLoading(true);
 
@@ -18,7 +19,8 @@ export default function UploadCoursework() {
         body: formData,
       });
       const data = await res.json();
-      setResult(data.data);
+      console.log("Response from backend:", data);
+      setResult(data);
     } catch (err) {
       console.error("Upload failed:", err);
     } finally {
@@ -33,59 +35,27 @@ export default function UploadCoursework() {
       <input
         type="file"
         accept="application/pdf"
-        onChange={(e) => setFile(e.target.files[0])}
+        onChange={(e) => {
+          console.log("Selected file:", e.target.files[0]);
+          setFile(e.target.files[0]);
+        }}
         className="mb-4"
       />
 
       <button
         onClick={handleUpload}
         disabled={loading}
-        className="px-4 py-2 bg-orange text-white rounded hover:bg-brand-red disabled:opacity-50"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
       >
-        {loading ? "Generating..." : "Generate Coursework"}
+        {loading ? "Uploading..." : "Upload PDF"}
       </button>
 
       {result && (
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Generated Coursework</h3>
-
-          {/* Quizzes */}
-          <div className="mb-4">
-            <h4 className="font-bold">Quizzes</h4>
-            {result.quizzes?.map((q, i) => (
-              <div key={i} className="p-2 border rounded mb-2">
-                <p className="font-semibold">{q.question}</p>
-                <ul className="list-disc ml-6">
-                  {q.options.map((opt, idx) => (
-                    <li key={idx}>{opt}</li>
-                  ))}
-                </ul>
-                <p className="text-sm text-gray-600">Answer: {q.answer}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Summaries */}
-          <div className="mb-4">
-            <h4 className="font-bold">Summaries</h4>
-            {result.summaries?.map((s, i) => (
-              <div key={i} className="p-2 border rounded mb-2">
-                <p className="font-semibold">{s.section}</p>
-                <p>{s.summary}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Flashcards */}
-          <div>
-            <h4 className="font-bold">Flashcards</h4>
-            {result.flashcards?.map((c, i) => (
-              <div key={i} className="p-2 border rounded mb-2">
-                <p className="font-semibold">Front: {c.front}</p>
-                <p>Back: {c.back}</p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold mb-2">Backend Response</h3>
+          <pre className="bg-gray-100 p-2 rounded text-sm">
+            {JSON.stringify(result, null, 2)}
+          </pre>
         </div>
       )}
     </div>

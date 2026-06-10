@@ -21,10 +21,12 @@ router.post("/", (req, res) => {
 
 router.post("/upload", upload.single("pdf"), async (req, res) => {
     try {
+      console.log("The back end got it")
       const text = await pdfService.extractPdfText(req.file.path);
       const result = await aiService.generateCourse(text, "coursework", "gemini");
       res.json({ success: true, data: result });
     } catch (err) {
+      console.log("The back end did not get it")
       res.status(500).json({ success: false, error: err.message });
     }
   });
