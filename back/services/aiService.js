@@ -1,4 +1,4 @@
-const { callLLM } = require("../utils/llmClients.js");
+const { callLLM, callGeminiWithRotation } = require("../utils/llmClients.js");
 
 function buildCourseworkPrompt(text) {
   return `
@@ -107,9 +107,8 @@ async function generateActivity(prompt, type, model = "default") {
 
 async function generateCourse(text, type, model = "default") {
   if (type === "coursework") {
-    const prompt = buildCourseworkPrompt(text);
-    const response = await callLLM(prompt, model);
-    return response;
+    const result = await callGeminiWithRotation(text);
+    return result;
   }
   return { error: "Unsupported type" };
 }

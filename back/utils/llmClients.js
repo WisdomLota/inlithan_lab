@@ -49,4 +49,42 @@ async function callHuggingFace(prompt) {
   return res.data;
 }
 
-module.exports = { callLLM };
+async function callGeminiWithRotation(prompt) {
+  const keys = [
+    process.env.GEMINI_KEY,
+    process.env.LAB2_API_KEY
+  ].filter(Boolean); // remove undefined keys
+
+  let lastError;
+
+  for (const key of keys) {
+    try {
+      const client = new GoogleGenAI({ apiKey: key });
+
+      const result = await client.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          { role: "user", parts: [{ text: prompt }] }
+        ]
+      });
+
+      return result; // success
+    } catch (err) {
+      const code = err?.status || err?.error?.code;
+      console.warn(`Key ${key || "undefined"} failed with code ${code}`);
+      lastError = err;
+
+      // skip to next key if it's a quota or transient error
+      if (code === 429 || code === 503) {
+        continue;
+      } else {
+        throw err; // stop on other errors
+      }
+    }
+  }
+
+  // if all keys failed
+  throw lastError || new Error("All Gemini API keys exhausted or invalid.");
+}
+
+module.exports = { callLLM, callGeminiWithRotation };
