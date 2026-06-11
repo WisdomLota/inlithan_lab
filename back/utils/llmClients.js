@@ -9,8 +9,12 @@ async function callLLM(prompt, model) {
       return await callClaude(prompt);
     case "huggingface":
       return await callHuggingFace(prompt);
+    case "openai":
+      return await callOpenAI(prompt);
+    case "ollama":
+      return await callOllama(prompt);
     default:
-      return await callGemini(prompt); // default
+      return await callOllama(prompt);
   }
 }
 
@@ -19,7 +23,7 @@ async function callGemini(prompt) {
   const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY})
 
   const res = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-2.0-flash",
     contents: prompt
   })
 
@@ -30,13 +34,16 @@ async function callGemini(prompt) {
 
 // Example Claude client
 async function callClaude(prompt) {
-  const res = await axios.post("https://api.anthropic.com/v1/complete", {
-    prompt,
-    model: "claude-3-opus",
-  }, {
-    headers: { Authorization: `Bearer ${process.env.CLAUDE_API_KEY}` }
+  const Anthropic = require("@anthropic-ai/sdk");
+  const client = new Anthropic.Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 4096,
+    messages: [{ role: "user", content: prompt }],
   });
-  return res.data;
+  
+  return message.content[0].text;
 }
 
 // Example HuggingFace client
@@ -49,11 +56,31 @@ async function callHuggingFace(prompt) {
   return res.data;
 }
 
+async function callOpenAI(prompt) {
+  const OpenAI = require("openai");
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  return response.choices[0].message.content;
+}
+
+async function callOllama(prompt) {
+  const res = await axios.post("http://localhost:11434/api/generate", {
+    model: "llama3.2",
+    prompt: prompt,
+    stream: false
+  });
+  return res.data.response;
+}
+
 async function callGeminiWithRotation(prompt) {
   const keys = [
-    process.env.GEMINI_KEY,
-    process.env.LAB2_API_KEY
-  ].filter(Boolean); // remove undefined keys
+    process.env.GEMINI_API_KEY,
+  ].filter(Boolean);
 
   let lastError;
 
@@ -62,7 +89,7 @@ async function callGeminiWithRotation(prompt) {
       const client = new GoogleGenAI({ apiKey: key });
 
       const result = await client.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         contents: [
           { role: "user", parts: [{ text: prompt }] }
         ]
@@ -87,4 +114,4 @@ async function callGeminiWithRotation(prompt) {
   throw lastError || new Error("All Gemini API keys exhausted or invalid.");
 }
 
-module.exports = { callLLM, callGeminiWithRotation };
+module.exports = { callLLM, callGeminiWithRotation, callOpenAI, callClaude, callHuggingFace, callOllama };

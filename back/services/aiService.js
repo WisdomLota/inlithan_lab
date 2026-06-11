@@ -10,9 +10,9 @@ function buildCourseworkPrompt(text) {
         {
           "title": "Course title",
           "about": "Text explaining the course",
-          "week 1": "Text for week 1,
-          "week 2": "Text for week 2,
-          "week 3": "Text for week 3,
+          "week 1": "Text for week 1",
+          "week 2": "Text for week 2",
+          "week 3": "Text for week 3",
           and so on
         }
 
@@ -28,12 +28,12 @@ function buildPrompt(prompt, type) {
 
         "${prompt}"
 
-        Return the result strictly in JSON with this structure:
+        Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
           "questions": [
             {
               "question": "string",
-              "options": ["A", "B", "C", "D"],
+              "options": ["A. option", "B. option", "C. option", "D. option"],
               "answer": "string"
             }
           ]
@@ -46,7 +46,7 @@ function buildPrompt(prompt, type) {
 
         "${prompt}"
 
-        Return the result strictly in JSON with this structure:
+        Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
           "main": "Detailed explanation text",
           "summary": "Short summary text"
@@ -58,7 +58,7 @@ function buildPrompt(prompt, type) {
 
         "${prompt}"
 
-        Return the result strictly in JSON with this structure:
+        Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
           "cards": [
             { "front": "Term", "back": "Definition" }
@@ -72,7 +72,9 @@ function buildPrompt(prompt, type) {
 
 async function generateActivity(prompt, type, model = "default") {
   const formattedPrompt = buildPrompt(prompt, type);
-  const response = JSON.parse(await callLLM(formattedPrompt, model));
+  const raw = await callLLM(formattedPrompt, model);
+  const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+  const response = JSON.parse(clean);
 
   switch (type) {
     case "course":
