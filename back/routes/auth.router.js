@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
 const jwt = require("jsonwebtoken");
+const { authMiddleware } = require("../middleware/auth");
 
 function generateToken(user) {
   return jwt.sign(
@@ -51,20 +52,24 @@ router.get("/me", (req, res) => {
 });
 
 // Set role (called after first login)
-router.post("/role", (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ success: false });
-  const token = authHeader.split(" ")[1];
+router.post("/role", authMiddleware, async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const User = require("../models/User");
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+
+    user.role = req.body.role;
+    await user.save();
+
     const newToken = jwt.sign(
-      { ...decoded, role: req.body.role },
+      { id: user._id, role: user.role, name: user.name, email: user.email, avatar: user.avatar },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
     res.json({ success: true, token: newToken });
-  } catch {
-    res.status(401).json({ success: false });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
