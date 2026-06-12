@@ -33,6 +33,34 @@ router.get("/explore", authMiddleware, async (req, res) => {
   }
 });
 
+// GET all students across teacher's courses
+router.get("/students/all", authMiddleware, requireRole("teacher"), async (req, res) => {
+  try {
+    const courses = await Course.find({ teacher: req.user.id }).populate("students", "name email avatar githubUsername");
+
+    const studentsMap = new Map();
+    courses.forEach(course => {
+      course.students.forEach(student => {
+        if (!studentsMap.has(student._id.toString())) {
+          studentsMap.set(student._id.toString(), {
+            id: student._id,
+            name: student.name,
+            email: student.email,
+            avatar: student.avatar,
+            githubUsername: student.githubUsername,
+            courses: [],
+          });
+        }
+        studentsMap.get(student._id.toString()).courses.push(course.title);
+      });
+    });
+
+    res.json({ success: true, data: Array.from(studentsMap.values()) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET single course
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
