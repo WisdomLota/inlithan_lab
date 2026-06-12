@@ -6,7 +6,7 @@ const { authMiddleware } = require("../middleware/auth");
 
 function generateToken(user) {
   return jwt.sign(
-    { id: user._id, role: user.role, name: user.name, email: user.email, avatar: user.avatar },
+    { id: user._id, role: user.role, name: user.name, email: user.email, avatar: user.avatar, githubUsername: user.githubUsername, hasGoogle: !!user.googleId },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -14,34 +14,51 @@ function generateToken(user) {
 
 // GitHub OAuth
 router.get("/github", passport.authenticate("github", {
-  scope: ["user:email", "read:user", "public_repo"]
+  scope: ["user:email", "read:user", "repo"],
 }));
+
+router.get("/github/link", authMiddleware, (req, res, next) => {
+  passport.authenticate("github", {
+    scope: ["user:email", "read:user", "repo"],
+    state: req.user.id,
+  })(req, res, next);
+});
 
 router.get("/github/callback",
   passport.authenticate("github", { session: false, failureRedirect: "/login" }),
   async (req, res) => {
-    const token = generateToken(req.user);
+    const linkingUserId = req.query.state;
 
-    // refresh score in background
-    const Score = require("../models/Score");
-    const { getGithubStats } = require("../services/githubService");
-    (async () => {
+    if (linkingUserId) {
       try {
-        if (req.user.githubAccessToken && req.user.githubUsername) {
-          const stats = await getGithubStats(req.user.githubAccessToken, req.user.githubUsername);
-          let score = await Score.findOne({ userId: req.user._id });
-          if (!score) score = new Score({ userId: req.user._id });
-          score.githubCommits = stats.commitCount;
-          score.githubPRs = stats.prCount;
-          score.githubRepos = stats.repoCount;
-          score.totalScore = score.githubCommits * 2 + score.githubPRs * 10 + score.githubRepos * 5 + score.activitiesCompleted * 15 + score.quizScoreTotal * 0.5;
-          await score.save();
+        const User = require("../models/User");
+        const githubUser = req.user;
+        const originalUser = await User.findById(linkingUserId);
+
+        if (originalUser) {
+          originalUser.githubId = githubUser.githubId;
+          originalUser.githubUsername = githubUser.githubUsername;
+          originalUser.githubAccessToken = githubUser.githubAccessToken;
+          await originalUser.save();
+
+          if (githubUser._id.toString() !== originalUser._id.toString()) {
+            if (githubUser.role !== "unset") {
+              // This GitHub account is already a separate real account - don't merge
+              return res.redirect(`${process.env.FRONTEND_URL}/settings?linked=conflict`);
+            }
+            await User.deleteOne({ _id: githubUser._id });
+          }
+
+          const newToken = generateToken(originalUser);
+          return res.redirect(`${process.env.FRONTEND_URL}/settings?linked=success&token=${newToken}`);
         }
       } catch (err) {
-        console.warn("Background score refresh failed:", err.message);
+        console.error("Link error:", err);
       }
-    })();
+      return res.redirect(`${process.env.FRONTEND_URL}/settings?linked=fail`);
+    }
 
+    const token = generateToken(req.user);
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   }
 );
