@@ -115,4 +115,43 @@ async function generateCourse(text, type, model = "default") {
   return { error: "Unsupported type" };
 }
 
-module.exports = { generateActivity, generateCourse };
+async function generateCourseContent(text) {
+  const prompt = `
+You are an AI curriculum designer. Based on the following course material, generate ONE week's worth of structured lesson content.
+
+"${text.slice(0, 8000)}"
+
+Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
+{
+  "title": "Week title",
+  "description": "Short week description",
+  "lessonNotes": [
+    [
+      { "type": "h", "text": "Section heading" },
+      { "type": "p", "text": "Paragraph text" },
+      { "type": "ul", "items": ["point 1", "point 2"] }
+    ]
+  ],
+  "lessonSummary": {
+    "lesson": [{ "type": "p", "text": "summary text" }],
+    "page": [{ "type": "p", "text": "shorter summary" }]
+  },
+  "flashCards": [
+    { "question": "Q text", "answer": "A text" }
+  ],
+  "outdatedFlags": ["Any outdated concepts found in the material, with explanation"]
+}
+`;
+
+  const raw = await callLLM(prompt, "ollama");
+  const clean = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .replace(/^[^{[]*/, "")
+    .replace(/[^}\]]*$/, "")
+    .trim();
+
+  return JSON.parse(clean);
+}
+
+module.exports = { generateActivity, generateCourse, generateCourseContent };
