@@ -5,6 +5,7 @@ const aiService = require("../services/aiService");
 const Course = require("../models/Course");
 const { authMiddleware, requireRole } = require("../middleware/auth");
 const router = express.Router();
+const cloudinary = require("../config/cloudinary");
 
 const upload = multer({ dest: "uploads/" });
 
@@ -28,6 +29,28 @@ router.get("/explore", authMiddleware, async (req, res) => {
   try {
     const courses = await Course.find({ students: { $ne: req.user.id } });
     res.json({ success: true, data: courses });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// UPLOAD course icon to Cloudinary (teacher only)
+router.post("/:id/icon", authMiddleware, requireRole("teacher"), upload.single("icon"), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, error: "Course not found" });
+    if (course.teacher.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "Not your course" });
+    }
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "inlithan/course-icons",
+    });
+
+    course.icon = result.secure_url;
+    await course.save();
+
+    res.json({ success: true, data: course });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
