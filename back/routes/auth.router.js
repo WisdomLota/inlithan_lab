@@ -19,8 +19,29 @@ router.get("/github", passport.authenticate("github", {
 
 router.get("/github/callback",
   passport.authenticate("github", { session: false, failureRedirect: "/login" }),
-  (req, res) => {
+  async (req, res) => {
     const token = generateToken(req.user);
+
+    // refresh score in background
+    const Score = require("../models/Score");
+    const { getGithubStats } = require("../services/githubService");
+    (async () => {
+      try {
+        if (req.user.githubAccessToken && req.user.githubUsername) {
+          const stats = await getGithubStats(req.user.githubAccessToken, req.user.githubUsername);
+          let score = await Score.findOne({ userId: req.user._id });
+          if (!score) score = new Score({ userId: req.user._id });
+          score.githubCommits = stats.commitCount;
+          score.githubPRs = stats.prCount;
+          score.githubRepos = stats.repoCount;
+          score.totalScore = score.githubCommits * 2 + score.githubPRs * 10 + score.githubRepos * 5 + score.activitiesCompleted * 15 + score.quizScoreTotal * 0.5;
+          await score.save();
+        }
+      } catch (err) {
+        console.warn("Background score refresh failed:", err.message);
+      }
+    })();
+
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   }
 );
