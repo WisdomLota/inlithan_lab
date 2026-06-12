@@ -26,6 +26,7 @@ const aiRouter = require("./routes/ai.router");
 const authRouter = require("./routes/auth.router");
 const scoresRouter = require("./routes/scores.router");
 const labsRouter = require("./routes/labs.router");
+const usersRouter = require("./routes/users.router");
 
 // Mount routers
 app.use("/activities", activitiesRouter);
@@ -34,6 +35,7 @@ app.use("/ai", aiRouter);
 app.use("/auth", authRouter);
 app.use("/scores", scoresRouter);
 app.use("/labs", labsRouter);
+app.use("/users", usersRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Inlihtan Labs backend running on port ${PORT}`));
