@@ -201,4 +201,27 @@ router.post("/:id/upload", authMiddleware, requireRole("teacher"), upload.single
   }
 });
 
+// UPDATE a specific week (teacher only)
+router.put("/:id/weeks/:weekId", authMiddleware, requireRole("teacher"), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, error: "Course not found" });
+    if (course.teacher.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "Not your course" });
+    }
+
+    const week = course.weeks.find(w => w._id.toString() === req.params.weekId);
+    if (!week) return res.status(404).json({ success: false, error: "Week not found" });
+
+    const { title, description } = req.body;
+    if (title !== undefined) week.title = title;
+    if (description !== undefined) week.description = description;
+
+    await course.save();
+    res.json({ success: true, data: course });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
