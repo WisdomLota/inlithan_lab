@@ -38,4 +38,17 @@ app.use("/labs", labsRouter);
 app.use("/users", usersRouter);
 
 const PORT = process.env.PORT || 5000;
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ success: false, error: "Something went wrong on the server." });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: "Endpoint not found." });
+});
+
+
 app.listen(PORT, () => console.log(`Inlihtan Labs backend running on port ${PORT}`));

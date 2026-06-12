@@ -1,7 +1,7 @@
 const axios = require("axios");
 const {GoogleGenAI} = require("@google/genai")
 
-async function callLLM(prompt, model) {
+async function callLLM(prompt, model, timeout) {
   switch (model) {
     case "gemini":
       return await callGemini(prompt);
@@ -12,9 +12,9 @@ async function callLLM(prompt, model) {
     case "openai":
       return await callOpenAI(prompt);
     case "ollama":
-      return await callOllama(prompt);
+      return await callOllama(prompt, timeout);
     default:
-      return await callOllama(prompt);
+      return await callOllama(prompt, timeout);
   }
 }
 
@@ -68,13 +68,23 @@ async function callOpenAI(prompt) {
   return response.choices[0].message.content;
 }
 
-async function callOllama(prompt) {
-  const res = await axios.post("http://localhost:11434/api/generate", {
-    model: "llama3.2",
-    prompt: prompt,
-    stream: false
-  });
-  return res.data.response;
+async function callOllama(prompt, timeout = 60000) {
+  try {
+    const res = await axios.post("http://localhost:11434/api/generate", {
+      model: "llama3.2",
+      prompt: prompt,
+      stream: false
+    }, { timeout });
+    return res.data.response;
+  } catch (err) {
+    if (err.code === 'ECONNREFUSED') {
+      throw new Error("AI service unavailable. Please ensure Ollama is running.");
+    }
+    if (err.code === 'ECONNABORTED') {
+      throw new Error("AI generation took too long. Try with a shorter document or fewer pages.");
+    }
+    throw err;
+  }
 }
 
 async function callGeminiWithRotation(prompt) {

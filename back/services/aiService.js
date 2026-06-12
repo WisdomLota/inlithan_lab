@@ -119,7 +119,7 @@ async function generateCourseContent(text) {
   const prompt = `
 You are an AI curriculum designer. Based on the following course material, generate ONE week's worth of structured lesson content.
 
-"${text.slice(0, 8000)}"
+"${text.slice(0, 6000)}"
 
 Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
 {
@@ -143,7 +143,7 @@ Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
 }
 `;
 
-  const raw = await callLLM(prompt, "ollama");
+  const raw = await callLLM(prompt, "ollama", 180000); // 3 minutes for large documents
   const clean = raw
     .replace(/```json/g, "")
     .replace(/```/g, "")
@@ -176,14 +176,23 @@ If nothing is outdated, return an empty array and isUpToDate: true.
 `;
 
   const raw = await callLLM(prompt, "ollama");
-  const clean = raw
+  let clean = raw
     .replace(/```json/g, "")
     .replace(/```/g, "")
     .replace(/^[^{[]*/, "")
     .replace(/[^}\]]*$/, "")
     .trim();
 
-  return JSON.parse(clean);
+  // remove trailing commas before } or ]
+  clean = clean.replace(/,(\s*[}\]])/g, "$1");
+
+  try {
+    return JSON.parse(clean);
+  } catch (err) {
+    console.error("Failed to parse AI response:", clean);
+    // graceful fallback
+    return { outdatedFlags: [], isUpToDate: true, parseError: true };
+  }
 }
 
 module.exports = { generateActivity, generateCourse, generateCourseContent, checkOutdatedContent };
