@@ -110,7 +110,7 @@ router.post("/:id/join", authMiddleware, requireRole("student"), async (req, res
   }
 });
 
-// UPLOAD PDF -> generate week content via AI (teacher only)
+// UPLOAD PDF -> generate week content via AI and add to course (teacher only)
 router.post("/:id/upload", authMiddleware, requireRole("teacher"), upload.single("pdf"), async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -122,7 +122,28 @@ router.post("/:id/upload", authMiddleware, requireRole("teacher"), upload.single
     const text = await pdfService.extractPdfText(req.file.path);
     const result = await aiService.generateCourseContent(text);
 
-    res.json({ success: true, data: result });
+    const nextWeekNumber = course.weeks.length > 0
+      ? Math.max(...course.weeks.map(w => w.number)) + 1
+      : 1;
+
+    const newWeek = {
+      number: nextWeekNumber,
+      title: result.title || `Week ${nextWeekNumber}`,
+      description: result.description || "",
+      lessonNotes: result.lessonNotes || [],
+      lessonSummary: result.lessonSummary || { lesson: [], page: [] },
+      flashCards: result.flashCards || [],
+      hasCode: false,
+    };
+
+    course.weeks.push(newWeek);
+    await course.save();
+
+    res.json({
+      success: true,
+      data: course,
+      outdatedFlags: result.outdatedFlags || [],
+    });
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).json({ success: false, error: err.message });
