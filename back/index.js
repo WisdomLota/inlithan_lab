@@ -10,8 +10,12 @@ connectDB();
 app.use(express.json());
 
 const cors = require('cors');
+const session = require("express-session");
+const passport = require("./config/passport");
 
 app.use(cors());
+app.use(session({ secret: process.env.JWT_SECRET, resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
 
 const upload = multer({ dest: "uploads/" });
 
