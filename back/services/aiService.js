@@ -25,9 +25,9 @@ function buildPrompt(prompt, type) {
     case "quiz":
       return `
         You are an AI tutor. Generate a quiz based on the following topic:
-          
+
         "${prompt}"
-          
+
         Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
           "questions": [
@@ -154,4 +154,36 @@ Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
   return JSON.parse(clean);
 }
 
-module.exports = { generateActivity, generateCourse, generateCourseContent };
+async function checkOutdatedContent(week) {
+  const contentText = JSON.stringify({
+    title: week.title,
+    description: week.description,
+    lessonNotes: week.lessonNotes,
+  }).slice(0, 8000);
+
+  const prompt = `
+You are an AI curriculum reviewer. Review the following week's lesson content for outdated information, deprecated technologies, superseded standards, or methodologies that have since changed.
+
+"${contentText}"
+
+Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
+{
+  "outdatedFlags": ["Description of outdated item and what it should be updated to", "..."],
+  "isUpToDate": true or false
+}
+
+If nothing is outdated, return an empty array and isUpToDate: true.
+`;
+
+  const raw = await callLLM(prompt, "ollama");
+  const clean = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .replace(/^[^{[]*/, "")
+    .replace(/[^}\]]*$/, "")
+    .trim();
+
+  return JSON.parse(clean);
+}
+
+module.exports = { generateActivity, generateCourse, generateCourseContent, checkOutdatedContent };

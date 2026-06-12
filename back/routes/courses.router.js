@@ -224,4 +224,25 @@ router.put("/:id/weeks/:weekId", authMiddleware, requireRole("teacher"), async (
   }
 });
 
+// Re-check a specific week for outdated content (teacher only)
+router.post("/:id/weeks/:weekId/recheck", authMiddleware, requireRole("teacher"), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ success: false, error: "Course not found" });
+    if (course.teacher.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "Not your course" });
+    }
+
+    const week = course.weeks.find(w => w._id.toString() === req.params.weekId);
+    if (!week) return res.status(404).json({ success: false, error: "Week not found" });
+
+    const aiService = require("../services/aiService");
+    const flags = await aiService.checkOutdatedContent(week);
+
+    res.json({ success: true, data: flags });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
