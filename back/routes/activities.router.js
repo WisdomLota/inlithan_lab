@@ -48,8 +48,14 @@ router.post("/", authMiddleware, requireRole("teacher"), async (req, res) => {
 
     let questions = [];
     if (type === "Quiz" && topicPrompt) {
-      const generated = await aiService.generateActivity(topicPrompt, "quiz", "ollama");
-      questions = generated.questions || [];
+      console.log("Generating quiz for prompt:", topicPrompt);
+      try {
+        const generated = await aiService.generateActivity(topicPrompt, "quiz", "ollama");
+        console.log("AI generated result:", JSON.stringify(generated));
+        questions = generated.questions || [];
+      } catch (err) {
+        console.error("AI generation failed:", err.message);
+      }
     }
 
     const activity = await Activity.create({
