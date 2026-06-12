@@ -106,11 +106,28 @@ router.post("/:id/submit", authMiddleware, requireRole("student"), async (req, r
     const activity = await Activity.findById(req.params.id);
     if (!activity) return res.status(404).json({ success: false, error: "Activity not found" });
 
-    const { answers, score } = req.body;
+    const { answers } = req.body; // array of selected option strings, same order as activity.questions
+
+    let score = 0;
+    if (activity.type === "Quiz" && Array.isArray(activity.questions)) {
+      activity.questions.forEach((q, i) => {
+        if (answers[i] && q.answer && answers[i].trim() === q.answer.trim()) {
+          score++;
+        }
+      });
+      const total = activity.questions.length || 1;
+      score = Math.round((score / total) * 100); // percentage
+    }
+
+    // remove any previous submission by this student
+    activity.submissions = activity.submissions.filter(
+      s => s.student.toString() !== req.user.id
+    );
+
     activity.submissions.push({ student: req.user.id, answers, score });
     await activity.save();
 
-    res.json({ success: true, data: activity });
+    res.json({ success: true, data: { score, total: activity.questions?.length || 0 } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

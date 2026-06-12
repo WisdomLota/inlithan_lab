@@ -25,16 +25,16 @@ function buildPrompt(prompt, type) {
     case "quiz":
       return `
         You are an AI tutor. Generate a quiz based on the following topic:
-
+          
         "${prompt}"
-
+          
         Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
           "questions": [
             {
               "question": "string",
-              "options": ["A. option", "B. option", "C. option", "D. option"],
-              "answer": "string"
+              "options": ["option text 1", "option text 2", "option text 3", "option text 4"],
+              "answer": "the exact text of the correct option, identical to one of the strings in options, with no letter prefix"
             }
           ]
         }
