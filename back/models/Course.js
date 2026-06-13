@@ -20,6 +20,7 @@ const courseSchema = new mongoose.Schema({
   currentWeek: { type: Number, default: 1 },
   teacher: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  pendingStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   weeks: [weekSchema],
 }, { timestamps: true });
 
