@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { useActivities } from '../context/useActivities'
-import { getSessions, getSession, createSession, deleteSession, sendMessage } from '../api/labs'
+import { getSessions, getSession, createSession, deleteSession, sendMessage, updateSessionTitle } from '../api/labs'
 import { generateActivity } from '../api/activities'
 import './AILabs.css'
+import { useCourses } from '../context/useCourses'
 
 function AILabs() {
   const { user } = useAuth()
@@ -20,6 +21,8 @@ function AILabs() {
   const [loading, setLoading] = useState(false)
   const [loadingSessions, setLoadingSessions] = useState(true)
   const [generatingActivity, setGeneratingActivity] = useState(false)
+
+  const { courses } = useCourses()
 
   const [attachedFile, setAttachedFile] = useState(null)
   const fileInputRef = useRef(null)
@@ -72,6 +75,11 @@ function AILabs() {
       // create a session to host this conversation
       const sessionRes = await createSession('tutor')
       setCurrentSession(sessionRes.data)
+
+      const course = courses.find(c => (c._id || c.id) === activityRequest.courseId)
+      const title = `${activityRequest.activityType} - ${course?.title || 'Course'}`
+      await updateSessionTitle(sessionRes.data._id, title)
+      setCurrentSession(prev => ({ ...prev, title }))
       setMessages([{ role: 'ai', text: `Generating your ${activityRequest.activityType.toLowerCase()} based on the course content. This may take a moment...` }])
 
       try {

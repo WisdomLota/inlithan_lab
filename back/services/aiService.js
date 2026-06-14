@@ -75,8 +75,24 @@ function buildPrompt(prompt, type, questionCount) {
 async function generateActivity(prompt, type, model = "default", timeout, questionCount) {
   const formattedPrompt = buildPrompt(prompt, type, questionCount);
   const raw = await callLLM(formattedPrompt, model, timeout);
-  const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-  const response = JSON.parse(clean);
+
+  let clean = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .replace(/^[^{[]*/, "")
+    .replace(/[^}\]]*$/, "")
+    .trim();
+
+  // remove trailing commas before } or ]
+  clean = clean.replace(/,(\s*[}\]])/g, "$1");
+
+  let response;
+  try {
+    response = JSON.parse(clean);
+  } catch (err) {
+    console.error("Failed to parse AI response:", clean);
+    response = { questions: [], main: "", summary: "", cards: [] };
+  }
 
   switch (type) {
     case "course":

@@ -41,3 +41,8 @@ export const sendMessage = async (sessionId, text, pdfFile) => {
   });
   return res.data;
 };
+
+export const updateSessionTitle = async (id, title) => {
+  const res = await axios.put(`${API_URL}/sessions/${id}`, { title }, authHeader());
+  return res.data;
+};

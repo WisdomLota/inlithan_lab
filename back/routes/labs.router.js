@@ -62,6 +62,23 @@ router.delete("/sessions/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// UPDATE session title
+router.put("/sessions/:id", authMiddleware, async (req, res) => {
+  try {
+    const { title } = req.body;
+    const session = await ChatSession.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!session) return res.status(404).json({ success: false, error: "Session not found" });
+
+    if (title !== undefined) session.title = title.slice(0, 50);
+    await session.save();
+
+    res.json({ success: true, data: session });
+  } catch (err) {
+    console.error("Message route error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // SEND message in session (with optional PDF attachment)
 router.post("/sessions/:id/message", authMiddleware, upload.single("pdf"), async (req, res) => {
   try {
