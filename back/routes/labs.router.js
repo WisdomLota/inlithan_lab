@@ -17,6 +17,7 @@ router.get("/sessions", authMiddleware, async (req, res) => {
       .sort({ updatedAt: -1 });
     res.json({ success: true, data: sessions });
   } catch (err) {
+    console.error("Message route error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -28,6 +29,7 @@ router.get("/sessions/:id", authMiddleware, async (req, res) => {
     if (!session) return res.status(404).json({ success: false, error: "Session not found" });
     res.json({ success: true, data: session });
   } catch (err) {
+    console.error("Message route error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -44,6 +46,7 @@ router.post("/sessions", authMiddleware, async (req, res) => {
     });
     res.json({ success: true, data: session });
   } catch (err) {
+    console.error("Message route error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -54,6 +57,7 @@ router.delete("/sessions/:id", authMiddleware, async (req, res) => {
     await ChatSession.deleteOne({ _id: req.params.id, userId: req.user.id });
     res.json({ success: true, message: "Session deleted" });
   } catch (err) {
+    console.error("Message route error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -110,6 +114,7 @@ router.post("/sessions/:id/message", authMiddleware, upload.single("pdf"), async
 
     res.json({ success: true, data: session });
   } catch (err) {
+    console.error("Message route error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
