@@ -1,36 +1,110 @@
-import { Link } from "react-router-dom";
+import { NavLink } from 'react-router-dom'
 
-export default function Sidebar() {
-  return (
-    <nav className="fixed top-0 left-0 h-screen w-64 bg-gray-900 text-white p-4">
-      <h2 className="text-2xl font-bold mb-6">Inlihtan Labs</h2>
-      <ul>
-        <li className="mb-2">
-          <Link to="/activities" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Activities
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link to="/courses" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Courses
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link to="/ai" className="block py-2 px-4 rounded hover:bg-gray-700">
-            AI
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link to="/auth" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Auth
-          </Link>
-        </li>
-        <li className="mb-2">
-          <Link to="/upload" className="block py-2 px-4 rounded hover:bg-gray-700">
-            Upload
-          </Link>
-        </li>
-      </ul>
-    </nav>
-  );
+import Lable from '../assets/inlithanLogoLable.png'
+import activitiesimg from '../assets/activities-g.svg'
+import activitiesimgActive from '../assets/activities-a.svg'
+import homeimg from '../assets/home-g.svg'
+import homeIconActive from '../assets/home-a.svg'
+import labsimg from '../assets/lab-g.svg'
+import labsimgActive from '../assets/lab-a.svg'
+import coursesimg from '../assets/courses-g.svg'
+import coursesimgActive from '../assets/courses-a.svg'
+import exploreimg from '../assets/explore-g.svg'
+import settingsimg from '../assets/settings.png'
+import studentListimg from '../assets/student-g.svg'
+import studentListimgActive from '../assets/student-a.svg'
+import panelIcon from '../assets/preview-a.svg'
+// import './Layout.css'
+import { useAuth } from '../context/useAuth'
+
+
+function Sidebar(){
+    const { user } = useAuth()
+    const isTeacher = user?.role === 'teacher'
+
+    return(
+        <div className='side-bar'>
+            <div className='logo-icon'>
+                <img src={Lable} alt="logo lable" className='logoIconImg top-nav'/>
+            </div>
+
+            <nav className='sidebar-nav'>
+                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item top active' : 'nav-item top'}>
+                {({ isActive }) => (
+                    <>
+                    <img src={isActive ? homeIconActive : homeimg} alt="home image" className='nav-icon'/>
+                    Home
+                    </>
+                )}
+                </NavLink>
+
+                <NavLink to="/courses" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {({ isActive }) => (
+                    <>
+                        <img src={isActive ? coursesimgActive : coursesimg} alt="home image" className='nav-icon'/>
+                        Courses
+                    </>
+                    )}
+                </NavLink>
+
+                <NavLink to="/activities" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {({ isActive }) => (
+                    <>
+                        <img src={isActive ? activitiesimgActive : activitiesimg} alt="activity image" className='nav-icon'/>
+                        Activities
+                    </>
+                    )}
+                </NavLink>
+
+                {/* <NavLink to="/leaderboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <img src={studentListimg} alt="leaderboard image" className='nav-icon'/>
+                    Leaderboard
+                </NavLink> */}
+
+                <NavLink to="/labs" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {({ isActive }) => (
+                    <>
+                        <img src={isActive ? labsimgActive : labsimg} alt="activity image" className='nav-icon'/>
+                        Labs
+                    </>
+                    )}
+                </NavLink>
+
+                {isTeacher ? (
+                    <NavLink to="/students" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {({ isActive }) => (
+                        <>
+                            <img src={isActive ? studentListimgActive : studentListimg} alt="activity image" className='nav-icon'/>
+                            Student List
+                        </>
+                        )}
+                    </NavLink>
+                ) : (
+                    <NavLink to="/explore" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        <img src={exploreimg} alt="explore image" className='nav-icon'/>
+                        Explore
+                    </NavLink>
+                )}
+
+                {/* <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <img src={settingsimg} alt="settings image" className='nav-icon'/>
+                    Settings
+                </NavLink> */}
+
+                <div className='sidebar-bottom'>
+                    <div className='research'>
+                        <div className='researchBox'>
+                             <p>Research Papers for the week</p>
+                        </div>
+                        <button className='researchbtn'>
+                            <img src={panelIcon} alt="" className='btn-inline-icon' />
+                            Preview
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    )
 }
+
+export default Sidebar

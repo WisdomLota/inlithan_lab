@@ -1,0 +1,258 @@
+/* ── History view ── */
+.lab-page {
+  padding: 24px;
+  color: #ffffff;
+}
+
+.lab-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.lab-history-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.btn-new-session {
+  background: none;
+  border: none;
+  color: #00b764;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-new-session:hover {
+  text-decoration: underline;
+}
+
+.lab-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lab-session-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lab-session-item:hover {
+  background-color: #1e212a;
+}
+
+.lab-session-icon {
+  width: 28px;
+  height: 28px;
+  background-color: #00b764;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.lab-session-name {
+  flex: 1;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.lab-session-date {
+  font-size: 12px;
+  color: #8c8d8f;
+  white-space: nowrap;
+}
+
+.lab-session-menu {
+  background: none;
+  border: none;
+  color: #8c8d8f;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  letter-spacing: 1px;
+}
+
+.lab-session-menu:hover {
+  color: #ffffff;
+}
+
+/* ── Chat view ── */
+.lab-chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.lab-chat-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 24px;
+  font-size: 14px;
+  color: #8c8d8f;
+  cursor: pointer;
+  border-bottom: 1px solid #2a2d35;
+}
+
+.lab-chat-back:hover {
+  color: #ffffff;
+}
+
+.lab-chat-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Welcome state */
+.lab-chat-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+}
+
+.lab-welcome-greeting {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.lab-welcome-sub {
+  color: #8c8d8f;
+  font-size: 14px;
+  margin: 0;
+}
+
+.lab-welcome-sub strong {
+  color: #ffffff;
+}
+
+.lab-mode-toggle {
+  display: flex;
+  background-color: #1e212a;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.lab-mode-btn {
+  background: none;
+  border: none;
+  color: #8c8d8f;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lab-mode-btn.active {
+  background-color: #2a2d35;
+  color: #ffffff;
+}
+
+/* Messages */
+.lab-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+}
+
+.lab-message {
+  max-width: 60%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.lab-message-user {
+  align-self: flex-end;
+  background-color: #2a2d35;
+  color: #ffffff;
+}
+
+.lab-message-ai {
+  align-self: flex-start;
+  background-color: #1e212a;
+  color: #cccccc;
+}
+
+/* Input area */
+.lab-chat-input-area {
+  border-top: 1px solid #2a2d35;
+  padding: 16px 24px;
+  background-color: #1a1d23;
+}
+
+.lab-chat-input {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 14px;
+  resize: none;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.lab-chat-input::placeholder {
+  color: #8c8d8f;
+}
+
+.lab-chat-input-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.lab-attach-btn {
+  background: none;
+  border: none;
+  color: #8c8d8f;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.lab-attach-btn:hover {
+  color: #ffffff;
+}
+
+.lab-send-btn {
+  width: 32px;
+  height: 32px;
+  background-color: #00b764;
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-send-btn:hover {
+  background-color: #009952;
+}

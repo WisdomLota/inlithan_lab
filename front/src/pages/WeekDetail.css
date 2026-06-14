@@ -1,0 +1,320 @@
+.week-detail {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Breadcrumb */
+.wd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  font-size: 14px;
+  border-bottom: 1px solid #2a2d35;
+}
+
+.wd-breadcrumb a {
+  color: #8C8D8F;
+  text-decoration: none;
+}
+
+.wd-breadcrumb a:hover {
+  color: #ffffff;
+}
+
+.wd-sep {
+  color: #8C8D8F;
+}
+
+.wd-current {
+  color: #ffffff;
+}
+
+/* Tabs */
+.wd-tabs-container {
+  background-color: #1a1d23;
+  border-bottom: 1px solid #2a2d35;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.wd-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.wd-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid #00B764;
+  color: #00B764;
+  font-size: 14px;
+  padding: 14px 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.wd-tab:hover:not(.active) {
+  background-color: #1e2128;
+}
+
+.wd-tab.active {
+  background-color: #143326;
+  color: #ffffff;
+  border-bottom: 2px solid #00B764;
+}
+
+/* Content area */
+.wd-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #1a1d23;
+  padding: 24px;
+}
+
+
+/* Pagination */
+.wd-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.wd-arrow {
+  background: none;
+  border: none;
+  color: #00B764;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.wd-arrow:disabled {
+  color: #3a3d45;
+  cursor: default;
+}
+
+.wd-page-box {
+  background-color: #2a2d35;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.wd-of {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+/* Lesson Notes */
+.wd-lesson-content {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.wd-p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 14px;
+  color: #e0e0e0;
+}
+
+.wd-h {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 0 8px;
+  color: #ffffff;
+}
+
+.wd-ul, .wd-ol {
+  margin: 0 0 14px 0;
+  padding-left: 20px;
+}
+
+.wd-ul li, .wd-ol li {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 4px;
+  color: #e0e0e0;
+}
+
+.wd-lesson-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  max-width: 780px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wd-nav-btn {
+  background: none;
+  border: none;
+  color: #00B764;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.wd-nav-btn:hover {
+  text-decoration: underline;
+}
+
+/* Summary */
+.wd-summary {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.wd-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.wd-toggle-label {
+  color: #8C8D8F;
+  font-size: 14px;
+}
+
+.wd-toggle-label.active {
+  color: #ffffff;
+}
+
+.wd-toggle-track {
+  width: 44px;
+  height: 24px;
+  background-color: #2a2d35;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.wd-toggle-dot {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #00B764;
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+
+.wd-toggle-dot.right {
+  left: 24px;
+}
+
+.wd-summary-content {
+  color: #ffffff;
+}
+
+/* Flash Cards */
+.wd-flashcards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wd-card {
+  border: 1px solid #3a3d45;
+  border-radius: 8px;
+  padding: 32px 40px;
+  width: 320px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #1e2128;
+}
+
+.wd-card-label {
+  color: #8C8D8F;
+  font-size: 13px;
+}
+
+.wd-card-text {
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wd-flip {
+  background: none;
+  border: none;
+  color: #00B764;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 14px;
+  padding: 0;
+}
+
+.wd-flip:hover {
+  text-decoration: underline;
+}
+
+/* Notes */
+.wd-notes {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.wd-notes-area {
+  width: 100%;
+  min-height: 300px;
+  background-color: #1e2128;
+  border: 1px solid #2a2d35;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 16px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.wd-notes-area::placeholder {
+  color: #8C8D8F;
+}
+
+/* Code */
+.wd-code {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.wd-code-input {
+  background-color: #1e2128;
+  border: 1px solid #2a2d35;
+  border-radius: 6px;
+  color: #8C8D8F;
+  font-size: 14px;
+  padding: 12px 20px;
+  width: 340px;
+  outline: none;
+}
+
+.wd-code-input::placeholder {
+  color: #8C8D8F;
+}
+
+.wd-code-input:focus {
+  border-color: #00B764;
+  color: #ffffff;
+}
