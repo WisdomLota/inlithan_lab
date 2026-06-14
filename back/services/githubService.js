@@ -36,18 +36,17 @@ async function getDetailedGithubStats(accessToken, username) {
 
   const now = Date.now();
   const pushEvents = events.filter(e => e.type === "PushEvent");
+  console.log("Total events:", events.length, "Push events:", JSON.stringify(pushEvents.map(e => ({ created_at: e.created_at, commits: e.payload?.commits?.length }))));
 
-  const commitsWeek = pushEvents
-    .filter(e => now - new Date(e.created_at).getTime() <= 7 * DAY_MS)
-    .reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
+  function countPushes(days) {
+    return pushEvents
+      .filter(e => now - new Date(e.created_at).getTime() <= days * DAY_MS)
+      .reduce((sum, e) => sum + (e.payload?.commits?.length || e.payload?.size || 1), 0);
+  }
 
-  const commitsMonth = pushEvents
-    .filter(e => now - new Date(e.created_at).getTime() <= 30 * DAY_MS)
-    .reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
-
-  const commitsYear = pushEvents
-    .filter(e => now - new Date(e.created_at).getTime() <= 365 * DAY_MS)
-    .reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
+  const commitsWeek = countPushes(7);
+  const commitsMonth = countPushes(30);
+  const commitsYear = countPushes(365);
 
   // All-time commits: sum contributor stats across top repos (capped to avoid rate-limit issues)
   let commitsAllTime = 0;
@@ -61,17 +60,18 @@ async function getDetailedGithubStats(accessToken, username) {
         `https://api.github.com/repos/${username}/${repo.name}/stats/contributors`,
         { headers }
       );
-      const contributor = (statsRes.data || []).find(c => c.author?.login === username);
-      if (contributor) {
-        commitsAllTime += contributor.total || 0;
+      const data = statsRes.data;
+      if (Array.isArray(data)) {
+        const contributor = data.find(c => c.author?.login === username);
+        if (contributor) commitsAllTime += contributor.total || 0;
       }
-    } catch {
-      // stats endpoint can 202 (computing) or fail - skip silently
+    } catch (err) {
+      console.warn(`Contributor stats failed for ${repo.name}:`, err.response?.status, err.message);
     }
   }
 
   // fallback: if all-time computation yields 0, use yearly as floor
-  if (commitsAllTime === 0) commitsAllTime = commitsYear;
+  if (commitsAllTime < commitsYear) commitsAllTime = commitsYear;
 
   // Top languages across repos
   const languageCounts = {};
@@ -90,7 +90,7 @@ async function getDetailedGithubStats(accessToken, username) {
 
   return {
     repoCount: repos.length,
-    commitCount: pushEvents.reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0),
+    commitCount: countPushes(365),
     prCount: prEvents.length,
     commitsWeek,
     commitsMonth,
