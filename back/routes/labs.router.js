@@ -4,6 +4,11 @@ const ChatSession = require("../models/ChatSession");
 const { authMiddleware } = require("../middleware/auth");
 const { callLLM } = require("../utils/llmClients");
 
+const multer = require("multer");
+const pdfService = require("../services/pdfService");
+
+const upload = multer({ dest: "uploads/" });
+
 // GET all sessions for current user
 router.get("/sessions", authMiddleware, async (req, res) => {
   try {
@@ -53,32 +58,51 @@ router.delete("/sessions/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// SEND message in session
-router.post("/sessions/:id/message", authMiddleware, async (req, res) => {
+// SEND message in session (with optional PDF attachment)
+router.post("/sessions/:id/message", authMiddleware, upload.single("pdf"), async (req, res) => {
   try {
     const { text } = req.body;
     const session = await ChatSession.findOne({ _id: req.params.id, userId: req.user.id });
     if (!session) return res.status(404).json({ success: false, error: "Session not found" });
 
-    session.messages.push({ role: "user", text });
+    let userMessageText = text || "";
+    let pdfText = "";
+    let attachmentName = null;
+
+    if (req.file) {
+      attachmentName = req.file.originalname;
+      pdfText = await pdfService.extractPdfText(req.file.path);
+      pdfText = pdfText.slice(0, 8000); // keep prompt manageable
+    }
+
+    session.messages.push({
+      role: "user",
+      text: userMessageText || `(Attached: ${attachmentName})`,
+      attachment: attachmentName || undefined,
+    });
 
     const systemContext = session.mode === 'tutor'
       ? "You are a patient AI tutor. Explain concepts step by step with examples."
       : "You are a friendly study buddy. Be conversational and encouraging.";
 
     const conversationText = session.messages.map(m => `${m.role}: ${m.text}`).join("\n");
-    const prompt = `${systemContext}\n\nConversation so far:\n${conversationText}\n\nRespond as the assistant. Return ONLY plain text, no JSON, no markdown formatting.`;
+
+    let prompt = `${systemContext}\n\nConversation so far:\n${conversationText}`;
+    if (pdfText) {
+      prompt += `\n\nThe user attached a document with the following content:\n"""${pdfText}"""\n\nUse this document to answer the user's request.`;
+    }
+    prompt += `\n\nRespond as the assistant. Return ONLY plain text, no JSON, no markdown formatting.`;
 
     const reply = await callLLM(prompt, "ollama");
     session.messages.push({ role: "ai", text: reply });
 
     if (session.messages.length === 2) {
       try {
-        const titlePrompt = `Based on this conversation, generate a short 3-6 word title summarizing the topic. Return ONLY the title text, no quotes, no punctuation at the end, nothing else.\n\nUser: ${text}\nAssistant: ${reply}`;
+        const titlePrompt = `Based on this conversation, generate a short 3-6 word title summarizing the topic. Return ONLY the title text, no quotes, no punctuation at the end, nothing else.\n\nUser: ${userMessageText}\nAssistant: ${reply}`;
         const title = await callLLM(titlePrompt, "ollama");
         session.title = title.trim().replace(/^["']|["']$/g, '').slice(0, 50);
       } catch {
-        session.title = text.slice(0, 40);
+        session.title = (userMessageText || attachmentName || "New Session").slice(0, 40);
       }
     }
 

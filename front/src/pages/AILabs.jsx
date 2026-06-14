@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/useAuth'
 import { getSessions, getSession, createSession, deleteSession, sendMessage } from '../api/labs'
 import './AILabs.css'
@@ -13,6 +13,9 @@ function AILabs() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingSessions, setLoadingSessions] = useState(true)
+
+  const [attachedFile, setAttachedFile] = useState(null)
+  const fileInputRef = useRef(null)
 
   async function loadSessions() {
     try {
@@ -63,14 +66,16 @@ function AILabs() {
 
   async function handleSend() {
     const text = input.trim()
-    if (!text || !currentSession) return
+    if ((!text && !attachedFile) || !currentSession) return
 
-    setMessages(prev => [...prev, { role: 'user', text }])
+    setMessages(prev => [...prev, { role: 'user', text: text || `(Attached: ${attachedFile?.name})`, attachment: attachedFile?.name }])
     setInput('')
+    const fileToSend = attachedFile
+    setAttachedFile(null)
     setLoading(true)
 
     try {
-      const res = await sendMessage(currentSession._id, text)
+      const res = await sendMessage(currentSession._id, text, fileToSend)
       setMessages(res.data.messages)
       await loadSessions()
     } catch (err) {
@@ -79,6 +84,14 @@ function AILabs() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0]
+    if (file && file.type === 'application/pdf') {
+      setAttachedFile(file)
+    }
+    e.target.value = null
   }
 
   if (view === 'history') {
@@ -145,6 +158,7 @@ function AILabs() {
           <div className="lab-messages">
             {messages.map((msg, i) => (
               <div key={i} className={`lab-message lab-message-${msg.role}`}>
+                {msg.attachment && <div className="lab-message-attachment">📎 {msg.attachment}</div>}
                 {msg.text}
               </div>
             ))}
@@ -164,7 +178,16 @@ function AILabs() {
           onKeyDown={e => e.key === 'Enter' && handleSend()}
         />
         <div className="lab-chat-input-actions">
-          <button className="lab-attach-btn">+ Attach</button>
+          <button className="lab-attach-btn" onClick={() => fileInputRef.current.click()}>
+            {attachedFile ? `📎 ${attachedFile.name}` : '+ Attach'}
+          </button>
+          <input
+            type="file"
+            accept=".pdf"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileSelect}
+          />
           <button className="lab-send-btn" onClick={handleSend} disabled={loading}>
             {loading ? '...' : '↑'}
           </button>

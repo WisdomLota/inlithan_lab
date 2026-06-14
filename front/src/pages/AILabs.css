@@ -256,3 +256,9 @@
 .lab-send-btn:hover {
   background-color: #009952;
 }
+
+.lab-message-attachment {
+  font-size: 11px;
+  color: #8c8d8f;
+  margin-bottom: 4px;
+}

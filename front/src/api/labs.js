@@ -27,7 +27,17 @@ export const deleteSession = async (id) => {
   return res.data;
 };
 
-export const sendMessage = async (sessionId, text) => {
-  const res = await axios.post(`${API_URL}/sessions/${sessionId}/message`, { text }, authHeader());
+export const sendMessage = async (sessionId, text, pdfFile) => {
+  const formData = new FormData();
+  formData.append("text", text || "");
+  if (pdfFile) formData.append("pdf", pdfFile);
+
+  const token = localStorage.getItem("token");
+  const res = await axios.post(`${API_URL}/sessions/${sessionId}/message`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return res.data;
 };
