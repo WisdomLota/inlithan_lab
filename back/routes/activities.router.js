@@ -5,6 +5,10 @@ const Course = require("../models/Course");
 const aiService = require("../services/aiService");
 const { authMiddleware, requireRole } = require("../middleware/auth");
 
+const pdfService = require("../services/pdfService");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+
 // GET all activities for current user
 router.get("/", authMiddleware, async (req, res) => {
   try {
@@ -134,6 +138,67 @@ router.post("/:id/submit", authMiddleware, requireRole("student"), async (req, r
 
     res.json({ success: true, data: { score, total: activity.questions?.length || 0 } });
   } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GENERATE activity via AI (teacher only) - used by AI Labs flow
+router.post("/generate", authMiddleware, requireRole("teacher"), upload.single("pdf"), async (req, res) => {
+  try {
+    const { courseId, activityType, questionCount, timeBased, minutes, questionType } = req.body;
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ success: false, error: "Course not found" });
+    if (course.teacher.toString() !== req.user.id) {
+      return res.status(403).json({ success: false, error: "Not your course" });
+    }
+
+    // Build context text from course content
+    let contextText = `Course: ${course.title}\nAbout: ${course.about}\n`;
+    course.weeks.forEach(week => {
+      contextText += `\nWeek ${week.number}: ${week.title}\n${week.description}\n`;
+      contextText += JSON.stringify(week.lessonNotes || []).slice(0, 1500) + "\n";
+    });
+
+    // Append PDF text if provided
+    if (req.file) {
+      const pdfText = await pdfService.extractPdfText(req.file.path);
+      contextText += `\n\nAdditional reference material:\n${pdfText}`;
+    }
+
+    contextText = contextText.slice(0, 8000);
+
+    const aiType = activityType === "Quiz" ? "quiz" : "explanation";
+    let questions = [];
+
+    if (activityType === "Quiz") {
+      const generated = await aiService.generateActivity(contextText, "quiz", "ollama", 180000, questionCount);
+      questions = (generated.questions || []).slice(0, Number(questionCount) || 5);
+    } else {
+      // Assignment: generate theory-based questions via quiz-style structure for consistency
+      const generated = await aiService.generateActivity(contextText, "quiz", "ollama", 180000, questionCount);
+      questions = (generated.questions || []).slice(0, Number(questionCount) || 5);
+    }
+
+    const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+    const title = `${course.title} - ${activityType}`;
+
+    const activity = await Activity.create({
+      courseId,
+      title,
+      type: activityType,
+      questions,
+      questionCount: questionCount || questions.length,
+      timeBased: timeBased === "true" || timeBased === true,
+      minutes: minutes || undefined,
+      questionType,
+      dueDate,
+    });
+
+    res.json({ success: true, data: activity });
+  } catch (err) {
+    console.error("Activity generation error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

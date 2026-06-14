@@ -20,13 +20,15 @@ function buildCourseworkPrompt(text) {
         `;
 }
 
-function buildPrompt(prompt, type) {
+function buildPrompt(prompt, type, questionCount) {
   switch (type) {
     case "quiz":
       return `
         You are an AI tutor. Generate a quiz based on the following topic:
 
         "${prompt}"
+
+        Generate exactly ${questionCount || 5} questions.
 
         Return ONLY a raw JSON object with absolutely no explanation, no markdown, no backticks, no extra text before or after. Just the JSON:
         {
@@ -70,38 +72,21 @@ function buildPrompt(prompt, type) {
   }
 }
 
-async function generateActivity(prompt, type, model = "default") {
-  const formattedPrompt = buildPrompt(prompt, type);
-  const raw = await callLLM(formattedPrompt, model);
+async function generateActivity(prompt, type, model = "default", timeout, questionCount) {
+  const formattedPrompt = buildPrompt(prompt, type, questionCount);
+  const raw = await callLLM(formattedPrompt, model, timeout);
   const clean = raw.replace(/```json/g, "").replace(/```/g, "").trim();
   const response = JSON.parse(clean);
 
   switch (type) {
     case "course":
-      return {
-        type,
-        prompt,
-        questions: response.questions || [],
-      };
+      return { type, prompt, questions: response.questions || [] };
     case "quiz":
-      return {
-        type,
-        prompt,
-        questions: response.questions || [],
-      };
+      return { type, prompt, questions: response.questions || [] };
     case "explanation":
-      return {
-        type,
-        prompt,
-        main: response.main || "",
-        summary: response.summary || "",
-      };
+      return { type, prompt, main: response.main || "", summary: response.summary || "" };
     case "flashcards":
-      return {
-        type,
-        prompt,
-        cards: response.cards || [],
-      };
+      return { type, prompt, cards: response.cards || [] };
     default:
       return { type, prompt, output: response.text || response };
   }

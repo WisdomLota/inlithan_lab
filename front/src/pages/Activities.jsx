@@ -64,7 +64,6 @@ function Activities (){
       {showCreate && (
         <CreateActivityPopup
           onClose={() => setShowCreate(false)}
-          onCreate={() => setShowCreate(false)}
         />
       )}
     </div>

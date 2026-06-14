@@ -31,3 +31,20 @@ export const submitActivity = async (id, payload) => {
   const res = await axios.post(`${API_URL}/${id}/submit`, payload, authHeader());
   return res.data;
 };
+
+export const generateActivity = async (payload, pdfFile) => {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) formData.append(key, value);
+  });
+  if (pdfFile) formData.append("pdf", pdfFile);
+
+  const token = localStorage.getItem("token");
+  const res = await axios.post(`${API_URL}/generate`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+};

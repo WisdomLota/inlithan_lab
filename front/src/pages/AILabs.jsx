@@ -1,10 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
+import { useActivities } from '../context/useActivities'
 import { getSessions, getSession, createSession, deleteSession, sendMessage } from '../api/labs'
+import { generateActivity } from '../api/activities'
 import './AILabs.css'
 
 function AILabs() {
   const { user } = useAuth()
+  const { refreshActivities } = useActivities()
+  const location = useLocation()
+  const navigate = useNavigate()
   const [view, setView] = useState('history')
   const [mode, setMode] = useState('buddy')
   const [sessions, setSessions] = useState([])
@@ -13,6 +19,7 @@ function AILabs() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingSessions, setLoadingSessions] = useState(true)
+  const [generatingActivity, setGeneratingActivity] = useState(false)
 
   const [attachedFile, setAttachedFile] = useState(null)
   const fileInputRef = useRef(null)
@@ -53,6 +60,51 @@ function AILabs() {
       console.error('Failed to create session:', err)
     }
   }
+
+  useEffect(() => {
+    const activityRequest = location.state?.activityRequest
+    if (!activityRequest) return
+
+    async function runGeneration() {
+      setView('chat')
+      setGeneratingActivity(true)
+
+      // create a session to host this conversation
+      const sessionRes = await createSession('tutor')
+      setCurrentSession(sessionRes.data)
+      setMessages([{ role: 'ai', text: `Generating your ${activityRequest.activityType.toLowerCase()} based on the course content. This may take a moment...` }])
+
+      try {
+        const res = await generateActivity(
+          {
+            courseId: activityRequest.courseId,
+            activityType: activityRequest.activityType,
+            questionCount: activityRequest.questionCount,
+            timeBased: activityRequest.timeBased,
+            minutes: activityRequest.minutes,
+            questionType: activityRequest.questionType,
+          },
+          activityRequest.pdfFile
+        )
+
+        await refreshActivities()
+
+        setMessages(prev => [...prev, {
+          role: 'ai',
+          text: `Done! I've created "${res.data.title}" with ${res.data.questions.length} questions, due ${new Date(res.data.dueDate).toLocaleDateString()}. You can find it in your Activities list.`
+        }])
+      } catch (err) {
+        console.error('Activity generation failed:', err)
+        setMessages(prev => [...prev, { role: 'ai', text: 'Sorry, I ran into an issue generating the activity. Please try again.' }])
+      } finally {
+        setGeneratingActivity(false)
+        // clear nav state so it doesn't re-trigger on back/refresh
+        navigate(location.pathname, { replace: true, state: {} })
+      }
+    }
+
+    runGeneration()
+  }, [location.state])
 
   async function handleDelete(id, e) {
     e.stopPropagation()
@@ -162,7 +214,7 @@ function AILabs() {
                 {msg.text}
               </div>
             ))}
-            {loading && (
+            {(loading || generatingActivity) && (
               <div className="lab-message lab-message-ai">
                 <span className="lab-typing">Thinking
                  <span></span><span></span><span></span>

@@ -7,7 +7,6 @@ function ActivityCard({ type, title, total, questions, questionCount, submission
       <h4 className='activity-type'>{type}</h4>
       <p className='activity-title'>{title}</p>
       <div className='activity-footer'>
-        <span>All {total}</span>
         <span>{questionCount ?? (Array.isArray(questions) ? questions.length : questions)} questions</span>
       </div>
       {submissions && <p className='activity-submissions'>Submissions: {submissions}</p>}

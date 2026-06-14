@@ -13,7 +13,7 @@ function CreateCoursePopup({ onClose, onCreate }) {
     if (!title.trim()) return
     setLoading(true)
     try {
-      await createCourse({ title, about, code: 'All 0', aboutPoints: [], aboutClosing: '' })
+      await createCourse({ title, about, aboutPoints: [], aboutClosing: '' })
       await refreshCourses()
       onCreate()
     } catch (err) {

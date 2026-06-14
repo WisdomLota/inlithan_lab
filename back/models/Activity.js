@@ -9,6 +9,7 @@ const activitySchema = new mongoose.Schema({
   timeBased: { type: Boolean, default: false },
   minutes: { type: Number },
   questionType: { type: String, enum: ["Multiple Choice", "Theory", "Mixed"] },
+  dueDate: { type: Date },
   submissions: [
     {
       student: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

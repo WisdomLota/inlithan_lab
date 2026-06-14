@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import activityIcon from '../assets/activities-g.svg'
 import { useCourses } from '../context/useCourses'
-import { useActivities } from '../context/useActivities'
-import { createActivity } from '../api/activities'
 
 function RadioGroup({ name, options, value, onChange }) {
   return (
@@ -26,13 +25,12 @@ function RadioGroup({ name, options, value, onChange }) {
   )
 }
 
-function CreateActivityPopup({ onClose, onCreate }) {
+function CreateActivityPopup({ onClose }) {
   const { courses } = useCourses()
-  const { refreshActivities } = useActivities()
+  const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
   const [course, setCourse] = useState(courses[0]?.id ?? '')
-  const [title, setTitle] = useState('')
   const [activityType, setActivityType] = useState('Assignment')
   const [questionCount, setQuestionCount] = useState('')
   const [timeBased, setTimeBased] = useState('No')
@@ -40,30 +38,24 @@ function CreateActivityPopup({ onClose, onCreate }) {
   const [questionType, setQuestionType] = useState('Theory')
   const [usePdf, setUsePdf] = useState('No')
   const [pdfFile, setPdfFile] = useState(null)
-  const [topicPrompt, setTopicPrompt] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  const submit = async () => {
-    if (!course || !title.trim() || courses.length === 0) return
-    setLoading(true)
-    try {
-      await createActivity({
-        courseId: course,
-        title,
-        type: activityType,
-        questionCount: Number(questionCount) || 0,
-        timeBased,
-        minutes: Number(minutes) || undefined,
-        questionType,
-        topicPrompt: topicPrompt || title,
-      })
-      await refreshActivities()
-      onCreate()
-    } catch (err) {
-      console.error('Failed to create activity:', err)
-    } finally {
-      setLoading(false)
-    }
+  const submit = () => {
+    if (!course || courses.length === 0) return
+
+    navigate('/labs', {
+      state: {
+        activityRequest: {
+          courseId: course,
+          activityType,
+          questionCount: Number(questionCount) || 0,
+          timeBased: timeBased === 'Yes',
+          minutes: Number(minutes) || undefined,
+          questionType,
+          pdfFile: usePdf === 'Yes' ? pdfFile : null,
+        }
+      }
+    })
+    onClose()
   }
 
   return (
@@ -86,30 +78,12 @@ function CreateActivityPopup({ onClose, onCreate }) {
           ))}
         </select>
 
-        <span className='activity-field-label'>Title:</span>
-        <input
-          type='text'
-          className='create-course-input'
-          placeholder='Activity Title'
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
         <span className='activity-field-label'>Activity Type:</span>
         <RadioGroup
           name='activityType'
           options={['Quiz', 'Assignment']}
           value={activityType}
           onChange={setActivityType}
-        />
-
-        <span className='activity-field-label'>Topic / Prompt for AI:</span>
-        <input
-          type='text'
-          className='create-course-input'
-          placeholder="e.g. Newton's laws of motion"
-          value={topicPrompt}
-          onChange={(e) => setTopicPrompt(e.target.value)}
         />
 
         <span className='activity-field-label'>Number of Questions:</span>
@@ -174,14 +148,14 @@ function CreateActivityPopup({ onClose, onCreate }) {
             You need to create a course before you can create an activity.
           </p>
         )}
-        
+
         <button
           className='btn-join create-course-submit'
           onClick={submit}
-          disabled={loading || courses.length === 0 || !course || !title.trim()}
+          disabled={courses.length === 0 || !course}
         >
           <img src={activityIcon} alt="" className='btn-inline-icon' />
-          {loading ? 'Creating...' : 'Create Activity'}
+          Create Activity
         </button>
       </div>
     </div>

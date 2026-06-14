@@ -9,19 +9,20 @@ import './Footer.css'
 const DAY_MS = 1000 * 60 * 60 * 24
 
 // temp
-const MOCK_ACTIVITIES = [
-  { _id: 'mock-1', code: 'ECC 501', type: 'Quiz', dueDate: new Date(Date.now() + 1 * DAY_MS) },
-  { _id: 'mock-2', code: 'ECC 501', type: 'Assignment', dueDate: new Date(Date.now() + 3 * DAY_MS) },
-  { _id: 'mock-3', code: 'MTH 204', type: 'Quiz', dueDate: new Date(Date.now() + 5 * DAY_MS) },
-  { _id: 'mock-4', code: 'PHY 110', type: 'Notes', dueDate: new Date(Date.now() + 7 * DAY_MS) },
-]
+// const MOCK_ACTIVITIES = [
+//   { _id: 'mock-1', code: 'ECC 501', type: 'Quiz', dueDate: new Date(Date.now() + 1 * DAY_MS) },
+//   { _id: 'mock-2', code: 'ECC 501', type: 'Assignment', dueDate: new Date(Date.now() + 3 * DAY_MS) },
+//   { _id: 'mock-3', code: 'MTH 204', type: 'Quiz', dueDate: new Date(Date.now() + 5 * DAY_MS) },
+//   { _id: 'mock-4', code: 'PHY 110', type: 'Notes', dueDate: new Date(Date.now() + 7 * DAY_MS) },
+// ]
 
 function daysUntilDue(activity) {
-  if (!activity.dueDate) return 3
+  if (!activity.dueDate) return Infinity
   return Math.ceil((new Date(activity.dueDate) - Date.now()) / DAY_MS)
 }
 
 function dueLabel(days) {
+  if (days === Infinity) return 'No due date'
   if (days <= 0) return 'Due today'
   if (days === 1) return 'Due in 1 day'
   return `Due in ${days} days`
@@ -29,26 +30,22 @@ function dueLabel(days) {
 
 function Footer() {
   const { activities } = useActivities()
+  console.log('Footer activities:', activities) 
   const { courses } = useCourses()
   const navigate = useNavigate()
 
   // sort by deadline and keep only four.
   const upcoming = useMemo(() => {
-    //empty state
-    // const source = activities 
-    // filled state 
-    const source = activities.length ? activities : MOCK_ACTIVITIES 
-    return source
+    return activities
       .map(a => ({ ...a, dueInDays: daysUntilDue(a) }))
       .sort((a, b) => a.dueInDays - b.dueInDays)
       .slice(0, 4)
   }, [activities])
 
   function codeFor(act) {
-    if (act.code) return act.code
     const id = act.courseId?._id || act.courseId
     const course = courses.find(c => (c._id || c.id) === id)
-    return course?.code || course?.title || 'Course'
+    return course?.title || act.code || 'Course'
   }
 
   if (upcoming.length === 0) {
