@@ -14,6 +14,13 @@
   overflow: hidden;
 }
 
+.sl-avatar img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .sl-filter {
   background: transparent;
   border: none;

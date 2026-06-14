@@ -105,3 +105,8 @@ export const rejectRequest = async (courseId, studentId) => {
   const res = await axios.post(`${API_URL}/${courseId}/requests/${studentId}/reject`, {}, authHeader());
   return res.data;
 };
+
+export const getAllStudentsDetailed = async () => {
+  const res = await axios.get(`${API_URL}/students/all/detailed`, authHeader());
+  return res.data;
+};

@@ -9,6 +9,10 @@ const cloudinary = require("../config/cloudinary");
 
 const upload = multer({ dest: "uploads/" });
 
+const { getDetailedGithubStats } = require("../services/githubService");
+const Score = require("../models/Score");
+const Activity = require("../models/Activity");
+
 // GET all courses for current user (student: enrolled, teacher: owned)
 router.get("/", authMiddleware, async (req, res) => {
   try {
@@ -147,6 +151,105 @@ router.get("/students/all", authMiddleware, requireRole("teacher"), async (req, 
 
     res.json({ success: true, data: Array.from(studentsMap.values()) });
   } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET detailed student list with rank, activities, GitHub stats (teacher only)
+router.get("/students/all/detailed", authMiddleware, requireRole("teacher"), async (req, res) => {
+  try {
+    const courses = await Course.find({ teacher: req.user.id }).populate("students", "name email avatar githubUsername githubAccessToken");
+
+    const studentsMap = new Map();
+    courses.forEach(course => {
+      course.students.forEach(student => {
+        if (!studentsMap.has(student._id.toString())) {
+          studentsMap.set(student._id.toString(), {
+            id: student._id,
+            name: student.name,
+            email: student.email,
+            avatar: student.avatar,
+            githubUsername: student.githubUsername,
+            githubAccessToken: student.githubAccessToken,
+            courseDetails: [],
+          });
+        }
+        studentsMap.get(student._id.toString()).courseDetails.push(course.title);
+      });
+    });
+
+    const studentIds = Array.from(studentsMap.keys());
+
+    // Get all scores for ranking
+    const scores = await Score.find({ userId: { $in: studentIds } });
+    const scoreMap = new Map(scores.map(s => [s.userId.toString(), s]));
+
+    // Rank students by totalScore (descending)
+    const ranked = studentIds
+      .map(id => ({ id, totalScore: scoreMap.get(id)?.totalScore || 0 }))
+      .sort((a, b) => b.totalScore - a.totalScore);
+    const rankMap = new Map(ranked.map((r, i) => [r.id, i + 1]));
+
+    // Get activity submission breakdown per student
+    const allActivities = await Activity.find({ "submissions.student": { $in: studentIds } });
+
+    const result = [];
+    for (const id of studentIds) {
+      const student = studentsMap.get(id);
+      const score = scoreMap.get(id);
+
+      let quiz = 0, assignments = 0, activitiesCount = 0;
+      allActivities.forEach(activity => {
+        activity.submissions.forEach(sub => {
+          if (sub.student.toString() === id) {
+            activitiesCount++;
+            if (activity.type === "Quiz") quiz++;
+            if (activity.type === "Assignment") assignments++;
+          }
+        });
+      });
+
+      let rankDetails = {
+        commitsWeek: 0, commitsMonth: 0, commitsYear: 0, commitsAllTime: 0, topLanguages: "N/A"
+      };
+
+      if (student.githubAccessToken && student.githubUsername) {
+        try {
+          const detailed = await getDetailedGithubStats(student.githubAccessToken, student.githubUsername);
+          rankDetails = {
+            commitsWeek: detailed.commitsWeek,
+            commitsMonth: detailed.commitsMonth,
+            commitsYear: detailed.commitsYear,
+            commitsAllTime: detailed.commitsAllTime,
+            topLanguages: detailed.topLanguages,
+          };
+        } catch (err) {
+          console.warn(`GitHub stats failed for ${student.githubUsername}:`, err.message);
+        }
+      }
+
+      result.push({
+        id,
+        name: student.name,
+        avatar: student.avatar,
+        githubUsername: student.githubUsername,
+        rank: rankMap.get(id),
+        courses: student.courseDetails.length,
+        activities: activitiesCount,
+        activityDetails: {
+          quiz,
+          assignments,
+          activities: activitiesCount,
+          researchPapers: 0, // no research paper tracking exists yet
+        },
+        courseDetails: student.courseDetails,
+        rankDetails,
+      });
+    }
+
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error("Detailed student list error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
