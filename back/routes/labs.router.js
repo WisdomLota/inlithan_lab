@@ -97,7 +97,7 @@ router.post("/sessions/:id/message", authMiddleware, upload.single("pdf"), async
     }
     prompt += `\n\nRespond as the assistant. Return ONLY plain text, no JSON, no markdown formatting.`;
 
-    const reply = await callLLM(prompt, "ollama");
+    const reply = await callLLM(prompt, "ollama", pdfText ? 180000 : 60000);
     session.messages.push({ role: "ai", text: reply });
 
     if (session.messages.length === 2) {
