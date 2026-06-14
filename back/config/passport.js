@@ -12,15 +12,27 @@ passport.use(new GitHubStrategy({
   async (accessToken, refreshToken, profile, done) => {
     try {
       let user = await User.findOne({ githubId: profile.id });
+
       if (!user) {
-        user = await User.create({
-          name: profile.displayName || profile.username,
-          email: profile.emails?.[0]?.value || `${profile.username}@github.com`,
-          avatar: profile.photos?.[0]?.value,
-          githubId: profile.id,
-          githubUsername: profile.username,
-          githubAccessToken: accessToken,
-        });
+        const email = profile.emails?.[0]?.value || `${profile.username}@github.com`;
+        user = await User.findOne({ email });
+
+        if (user) {
+          // Existing account (e.g. signed up with Google) — link GitHub to it
+          user.githubId = profile.id;
+          user.githubUsername = profile.username;
+          user.githubAccessToken = accessToken;
+          await user.save();
+        } else {
+          user = await User.create({
+            name: profile.displayName || profile.username,
+            email,
+            avatar: profile.photos?.[0]?.value,
+            githubId: profile.id,
+            githubUsername: profile.username,
+            githubAccessToken: accessToken,
+          });
+        }
       } else {
         user.githubAccessToken = accessToken;
         await user.save();
@@ -40,13 +52,24 @@ passport.use(new GoogleStrategy({
   async (accessToken, refreshToken, profile, done) => {
     try {
       let user = await User.findOne({ googleId: profile.id });
+    
       if (!user) {
-        user = await User.create({
-          name: profile.displayName,
-          email: profile.emails?.[0]?.value,
-          avatar: profile.photos?.[0]?.value,
-          googleId: profile.id,
-        });
+        const email = profile.emails?.[0]?.value;
+        user = await User.findOne({ email });
+      
+        if (user) {
+          // Existing account (e.g. signed up with GitHub) — link Google to it
+          user.googleId = profile.id;
+          if (!user.avatar) user.avatar = profile.photos?.[0]?.value;
+          await user.save();
+        } else {
+          user = await User.create({
+            name: profile.displayName,
+            email,
+            avatar: profile.photos?.[0]?.value,
+            googleId: profile.id,
+          });
+        }
       }
       return done(null, user);
     } catch (err) {
