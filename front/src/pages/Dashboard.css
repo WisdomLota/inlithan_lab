@@ -337,6 +337,12 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
+.activity-no-courses-warning {
+  color: #ff6b6b;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
 .activity-field-label {
   display: block;
   color: #ffffff;

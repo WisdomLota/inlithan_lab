@@ -44,7 +44,7 @@ function CreateActivityPopup({ onClose, onCreate }) {
   const [loading, setLoading] = useState(false)
 
   const submit = async () => {
-    if (!course || !title.trim()) return
+    if (!course || !title.trim() || courses.length === 0) return
     setLoading(true)
     try {
       await createActivity({
@@ -169,7 +169,17 @@ function CreateActivityPopup({ onClose, onCreate }) {
           onChange={(e) => setPdfFile(e.target.files[0] ?? null)}
         />
 
-        <button className='btn-join create-course-submit' onClick={submit} disabled={loading}>
+        {courses.length === 0 && (
+          <p className="activity-no-courses-warning">
+            You need to create a course before you can create an activity.
+          </p>
+        )}
+        
+        <button
+          className='btn-join create-course-submit'
+          onClick={submit}
+          disabled={loading || courses.length === 0 || !course || !title.trim()}
+        >
           <img src={activityIcon} alt="" className='btn-inline-icon' />
           {loading ? 'Creating...' : 'Create Activity'}
         </button>

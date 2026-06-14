@@ -40,6 +40,11 @@ router.post("/", authMiddleware, requireRole("teacher"), async (req, res) => {
   try {
     const { courseId, title, type, questionCount, timeBased, minutes, questionType, topicPrompt } = req.body;
 
+    const teacherCourseCount = await Course.countDocuments({ teacher: req.user.id });
+    if (teacherCourseCount === 0) {
+      return res.status(400).json({ success: false, error: "You must create a course before creating an activity" });
+    }
+
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ success: false, error: "Course not found" });
     if (course.teacher.toString() !== req.user.id) {
