@@ -1,0 +1,159 @@
+.sl-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 24px;
+}
+
+/* Filter tabs */
+.sl-filters {
+  display: inline-flex;
+  border: 1px solid #2a2d35;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sl-filter {
+  background: transparent;
+  border: none;
+  border-right: 1px solid #2a2d35;
+  color: #c7c8ca;
+  font-size: 14px;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+
+.sl-filter:last-child {
+  border-right: none;
+}
+
+.sl-filter:hover {
+  background: #1e2128;
+}
+
+.sl-filter.active {
+  color: #00B764;
+  border: 1px solid #00B764;
+  border-radius: 6px;
+}
+
+.sl-filter-caret {
+  color: inherit;
+}
+
+/* List */
+.sl-list {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sl-card {
+  background: #1e2128;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Collapsed row */
+.sl-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #c7c8ca;
+  font-size: 13px;
+  text-align: left;
+}
+
+.sl-avatar {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sl-name {
+  flex: 1;
+  color: #FEFFFF;
+  font-size: 14px;
+}
+
+.sl-stat {
+  color: #FEFFFF;
+  white-space: nowrap;
+  min-width: 90px;
+}
+
+
+.sl-chevron {
+  color: #00B764;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.sl-chevron.up {
+  transform: rotate(180deg);
+}
+
+/* Expanded details */
+.sl-details {
+  padding: 8px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #FEFFFF;
+}
+
+.sl-detail-title {
+  font-size: 13px;
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+
+.sl-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 24px;
+  font-size: 13px;
+}
+
+.sl-detail-grid + .sl-detail-grid {
+  margin-top: 12px;
+}
+
+.sl-lang {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sl-details-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.sl-review-btn {
+  background: transparent;
+  border: 1px solid #00B764;
+  border-radius: 8px;
+  color: #00B764;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 26px;
+  cursor: pointer;
+}
+
+.sl-review-btn:hover {
+  background: rgba(0, 183, 100, 0.12);
+}

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 import Lable from '../assets/inlithanLogoLable.png'
 import activitiesimg from '../assets/activities-g.svg'
@@ -10,7 +10,7 @@ import labsimgActive from '../assets/lab-a.svg'
 import coursesimg from '../assets/courses-g.svg'
 import coursesimgActive from '../assets/courses-a.svg'
 import exploreimg from '../assets/explore-g.svg'
-import settingsimg from '../assets/settings.png'
+// import settingsimg from '../assets/settings.png'
 import studentListimg from '../assets/student-g.svg'
 import studentListimgActive from '../assets/student-a.svg'
 import panelIcon from '../assets/preview-a.svg'
@@ -21,6 +21,7 @@ import { useAuth } from '../context/useAuth'
 function Sidebar(){
     const { user } = useAuth()
     const isTeacher = user?.role === 'teacher'
+    const navigate = useNavigate()
 
     return(
         <div className='side-bar'>
@@ -96,7 +97,7 @@ function Sidebar(){
                         <div className='researchBox'>
                              <p>Research Papers for the week</p>
                         </div>
-                        <button className='researchbtn'>
+                        <button className='researchbtn' onClick={() => navigate('/research')}>
                             <img src={panelIcon} alt="" className='btn-inline-icon' />
                             Preview
                         </button>

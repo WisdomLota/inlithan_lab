@@ -1,0 +1,82 @@
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid #2a2d35;
+  background-color: #1a1d23;
+  height: 100px;
+}
+
+.footer--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-empty-logo {
+  height: 40px;
+  width: auto;
+  opacity: 0.6;
+}
+
+.footer-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-right: 1px solid #2a2d35;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.footer-card:last-child {
+  border-right: none;
+}
+
+.footer-card:hover {
+  background-color: #1e212a;
+}
+
+/* The activity closest to its deadline is highlighted. */
+.footer-card--soon {
+  background-color: #152826;
+  border-top: 2px solid #22c55e;
+}
+
+.footer-card-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.footer-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.footer-card-code {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e7e9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-card-sub {
+  font-size: 11px;
+  color: #8c8d8f;
+}
+
+.footer-card-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: #b5b6b8;
+  background-color: #2a2d35;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}

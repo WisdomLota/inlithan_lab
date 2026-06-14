@@ -1,7 +1,8 @@
 import Login from "./pages/Login"
 import RolePick from "./pages/RolePick"
 import Dashboard from "./pages/Dashboard"
-import StudentList from "./pages/StudentList"
+// import StudentList from "./pages/StudentList"
+import StudentListTemp from "./pages/StudentListTemp"
 import Courses from "./pages/Courses"
 import CourseDetail from "./pages/CourseDetail"
 import WeekDetail from "./pages/WeekDetail"
@@ -14,6 +15,7 @@ import AuthCallback from "./pages/AuthCallback"
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from "./components/Layout"
 import Leaderboard from "./pages/Leaderboard"
+import Research from "./pages/Research"
 
 
 function App() {
@@ -24,17 +26,18 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/role" element={<RolePick />} />
         <Route path="/dashboard" element={<Layout showHeader={true} showFooter={true} headerTitle="" showUser={true}><Dashboard /></Layout>} />
-        <Route path="/students" element={<Layout showHeader={true} showFooter={true} headerTitle="Student List" showUser={false}><StudentList /></Layout>} />
+        <Route path="/students" element={<Layout showHeader={true} showFooter={false} headerTitle="Student List" showUser={false}><StudentListTemp /></Layout>} />
         <Route path="/courses" element={<Layout showHeader={true} showFooter={true} headerTitle="Courses" showUser={false}><Courses /></Layout>} />
-        <Route path="/courses/:courseId" element={<Layout showHeader={true} showFooter={true} headerTitle="Courses" showUser={false}><CourseDetail /></Layout>} />
+        <Route path="/courses/:courseId" element={<Layout showHeader={true} showFooter={false} headerTitle="Courses" showUser={false}><CourseDetail /></Layout>} />
         <Route path="/courses/:courseId/week/:weekId" element={<Layout showHeader={false} showFooter={false} headerTitle="" showUser={false}><WeekDetail /></Layout>} />
         <Route path="/courses/:courseId/activity/:activityId" element={<Layout showHeader={false} showFooter={false} headerTitle="" showUser={false}><ActivityDetail /></Layout>} />
         <Route path="/activities" element={<Layout showHeader={true} showFooter={true} headerTitle="Activities" showUser={false}><Activities /></Layout>} />
-        <Route path="/labs" element={<Layout showHeader={true} showFooter={true} headerTitle="AILabs" showUser={false}><AILabs /></Layout>} />
+        <Route path="/labs" element={<Layout showHeader={false} showFooter={false} headerTitle="AILabs" showUser={false}><AILabs /></Layout>} />
         <Route path="/explore" element={<Layout showHeader={true} showFooter={false} headerTitle="Explore" showUser={false}><Explore /></Layout>} />
         <Route path="/settings" element={<Layout showHeader={true} showFooter={false} headerTitle="Settings" showUser={false}><Settings /></Layout>} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/leaderboard" element={<Layout showHeader={true} showFooter={true} headerTitle="Leaderboard" showUser={false}><Leaderboard /></Layout>} />
+        <Route path="/leaderboard" element={<Layout showHeader={true} showFooter={false} headerTitle="Leaderboard" showUser={false}><Leaderboard /></Layout>} />
+        <Route path="/research" element={<Layout showHeader={false} showFooter={false} headerTitle="Research paper of the week" showUser={false}><Research /></Layout>} />
       </Routes>
     </BrowserRouter>
   

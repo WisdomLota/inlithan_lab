@@ -163,7 +163,11 @@ function AILabs() {
               </div>
             ))}
             {loading && (
-              <div className="lab-message lab-message-ai">Thinking...</div>
+              <div className="lab-message lab-message-ai">
+                <span className="lab-typing">Thinking
+                 <span></span><span></span><span></span>
+                </span>
+              </div>
             )}
           </div>
         )}
