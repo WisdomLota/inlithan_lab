@@ -31,7 +31,7 @@ router.get("/", authMiddleware, async (req, res) => {
 // GET single activity
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
-    const activity = await Activity.findById(req.params.id);
+    const activity = await Activity.findById(req.params.id).populate("submissions.student", "name email avatar");
     if (!activity) return res.status(404).json({ success: false, error: "Activity not found" });
     res.json({ success: true, data: activity });
   } catch (err) {
@@ -202,5 +202,6 @@ router.post("/generate", authMiddleware, requireRole("teacher"), upload.single("
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 module.exports = router;

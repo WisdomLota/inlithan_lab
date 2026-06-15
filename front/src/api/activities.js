@@ -48,3 +48,8 @@ export const generateActivity = async (payload, pdfFile) => {
   });
   return res.data;
 };
+
+export const getActivity = async (id) => {
+  const res = await axios.get(`${API_URL}/${id}`, authHeader());
+  return res.data;
+};

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { useCourses } from '../context/useCourses'
 import { useActivities } from '../context/useActivities'
 import { useAuth } from '../context/useAuth'
 import { submitActivity } from '../api/activities'
 import emptyIcon from '../assets/emptyIcon.png'
+import { getActivity } from '../api/activities'
 // import './ActivityDetail.css'
 
 function ActivityDetail() {
@@ -31,6 +32,21 @@ function ActivityDetail() {
   const existingSubmission = activity.submissions?.find(
     s => (s.student?._id || s.student) === user.id
   )
+
+  const [showSubmissions, setShowSubmissions] = useState(false)
+  const [detailedActivity, setDetailedActivity] = useState(null)
+
+  async function toggleSubmissions() {
+    if (!showSubmissions && !detailedActivity) {
+      try {
+        const res = await getActivity(activity.id)
+        setDetailedActivity(res.data)
+      } catch (err) {
+        console.error('Failed to load submissions:', err)
+      }
+    }
+    setShowSubmissions(prev => !prev)
+  }
 
   async function handleSubmit() {
     setSubmitting(true)
@@ -71,7 +87,27 @@ function ActivityDetail() {
               <br />
               {activity.submissions?.length || 0} submission(s)
             </p>
-            <button className="ad-btn-solid">View Submissions</button>
+            <button className="ad-btn-solid" onClick={toggleSubmissions}>
+              {showSubmissions ? 'Hide Submissions' : 'View Submissions'}
+            </button>
+
+            {showSubmissions && (
+              <div style={{ marginTop: 20, width: '100%' }}>
+                {!detailedActivity ? (
+                  <p style={{ color: '#8C8D8F' }}>Loading...</p>
+                ) : detailedActivity.submissions.length === 0 ? (
+                  <p style={{ color: '#8C8D8F' }}>No submissions yet.</p>
+                ) : (
+                  detailedActivity.submissions.map((sub, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: '#1e2128', borderRadius: 8, marginBottom: 8 }}>
+                      <span style={{ color: '#fff', fontSize: 13 }}>{sub.student?.name || sub.student?.email || `Student (${sub.student?._id || sub.student || 'unknown'})`}</span>
+                      <span style={{ color: '#8C8D8F', fontSize: 12 }}>{sub.student?.email}</span>
+                      <span style={{ color: '#00B764', fontWeight: 700 }}>{sub.score}%</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
