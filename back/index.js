@@ -3,6 +3,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const connectDB = require("./config/db");
+const searchRouter = require("./routes/search.router");
 const app = express();
 
 const cron = require("node-cron");
@@ -42,6 +43,7 @@ app.use("/scores", scoresRouter);
 app.use("/labs", labsRouter);
 app.use("/users", usersRouter);
 app.use("/research", researchRouter);
+app.use("/search", searchRouter);
 
 // Weekly: every Monday at 00:05
 cron.schedule("5 0 * * 1", async () => {
