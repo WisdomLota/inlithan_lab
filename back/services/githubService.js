@@ -36,7 +36,6 @@ async function getDetailedGithubStats(accessToken, username) {
 
   const now = Date.now();
   const pushEvents = events.filter(e => e.type === "PushEvent");
-  console.log("Total events:", events.length, "Push events:", JSON.stringify(pushEvents.map(e => ({ created_at: e.created_at, commits: e.payload?.commits?.length }))));
 
   function countPushes(days) {
     return pushEvents

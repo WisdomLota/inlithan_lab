@@ -126,3 +126,11 @@
 .rp-next:hover {
   text-decoration: underline;
 }
+
+
+.rp-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 8px 56px 0;
+}

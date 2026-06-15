@@ -5,6 +5,11 @@ const path = require("path");
 const connectDB = require("./config/db");
 const app = express();
 
+const cron = require("node-cron");
+const researchRouter = require("./routes/research.router");
+const { generateWeeklyResearchPaper } = require("./services/researchService");
+
+
 connectDB();
 
 app.use(express.json());
@@ -36,6 +41,19 @@ app.use("/auth", authRouter);
 app.use("/scores", scoresRouter);
 app.use("/labs", labsRouter);
 app.use("/users", usersRouter);
+app.use("/research", researchRouter);
+
+// Weekly: every Monday at 00:05
+cron.schedule("5 0 * * 1", async () => {
+  try {
+    console.log("Generating weekly research paper...");
+    await generateWeeklyResearchPaper();
+    console.log("Weekly research paper generated.");
+  } catch (err) {
+    console.error("Weekly research paper generation failed:", err.message);
+  }
+});
+
 
 const PORT = process.env.PORT || 5000;
 

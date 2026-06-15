@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getCurrentResearchPaper } from '../api/research'
 import './Research.css'
 
 function renderBlocks(blocks) {
@@ -14,39 +15,49 @@ function renderBlocks(blocks) {
   })
 }
 
-const TOTAL_PAGES = 5
-
-function getPageContent(page) {
-  return [{ type: 'p', text: `Content for page ${page} of the research paper.` }]
-}
-
 function Research() {
+  const [paper, setPaper] = useState(null)
   const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    getCurrentResearchPaper()
+      .then(res => setPaper(res.data))
+      .catch(err => console.error('Failed to load research paper:', err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="research-page"><p style={{ color: '#8C8D8F', padding: 24 }}>Loading...</p></div>
+  if (!paper) return <div className="research-page"><p style={{ color: '#8C8D8F', padding: 24 }}>No research paper available yet.</p></div>
+
+  const totalPages = paper.pages.length
   const goPrev = () => setPage(p => Math.max(1, p - 1))
-  const goNext = () => setPage(p => Math.min(TOTAL_PAGES, p + 1))
+  const goNext = () => setPage(p => Math.min(totalPages, p + 1))
 
   return (
     <div className="research-page">
       <div className="rp-card">
         <div className="rp-tabbar">
-          <button className="rp-tab active">Research Paper</button>
+          <button className="rp-tab active">{paper.title}</button>
         </div>
 
         <div className="rp-pagination">
           <button className="rp-arrow" disabled={page === 1} onClick={goPrev}>‹</button>
           <span className="rp-page-box">{page}</span>
-          <span className="rp-of">of {TOTAL_PAGES}</span>
-          <button className="rp-arrow" disabled={page === TOTAL_PAGES} onClick={goNext}>›</button>
+          <span className="rp-of">of {totalPages}</span>
+          <button className="rp-arrow" disabled={page === totalPages} onClick={goNext}>›</button>
         </div>
 
         <div className="rp-content">
-          {renderBlocks(getPageContent(page))}
+          {renderBlocks(paper.pages[page - 1] || [])}
         </div>
 
         <div className="rp-footer">
-          {page < TOTAL_PAGES && (
-            <button className="rp-next" onClick={goNext}>Next</button>
+          {paper.sourceUrl && (
+            <a href={paper.sourceUrl} target="_blank" rel="noreferrer" className="rp-next">Source ↗</a>
+          )}
+          {page < totalPages && (
+            <button className="rp-next" onClick={goNext} style={{ marginLeft: 16 }}>Next</button>
           )}
         </div>
       </div>

@@ -196,4 +196,43 @@ If nothing is outdated, return an empty array and isUpToDate: true.
   }
 }
 
-module.exports = { generateActivity, generateCourse, generateCourseContent, checkOutdatedContent };
+async function generateResearchSummary(paperTitle, paperSummary) {
+  const prompt = `
+You are an academic writing assistant. Based on the following research paper abstract, write a multi-page structured summary suitable for students.
+
+Title: "${paperTitle}"
+Abstract: "${paperSummary}"
+
+Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
+{
+  "pages": [
+    [
+      { "type": "h", "text": "Section heading" },
+      { "type": "p", "text": "Paragraph text" },
+      { "type": "ul", "items": ["point 1", "point 2"] }
+    ]
+  ]
+}
+
+Generate 3-5 pages, each page being an array of blocks. Cover: overview, key concepts, methodology/approach, findings, and relevance to students.
+`;
+
+  const raw = await callLLM(prompt, "ollama", 180000);
+  let clean = raw
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .replace(/^[^{[]*/, "")
+    .replace(/[^}\]]*$/, "")
+    .trim();
+  clean = clean.replace(/,(\s*[}\]])/g, "$1");
+
+  try {
+    const parsed = JSON.parse(clean);
+    return parsed.pages || [];
+  } catch (err) {
+    console.error("Failed to parse research summary:", clean);
+    return [[{ type: "p", text: paperSummary }]];
+  }
+}
+
+module.exports = { generateActivity, generateCourse, generateCourseContent, checkOutdatedContent, generateResearchSummary };
