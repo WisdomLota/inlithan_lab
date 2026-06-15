@@ -30,7 +30,7 @@ function dueLabel(days) {
 
 function Footer() {
   const { activities } = useActivities()
-  console.log('Footer activities:', activities) 
+  // console.log('Footer activities:', activities) 
   const { courses } = useCourses()
   const navigate = useNavigate()
 

@@ -145,15 +145,29 @@ Return ONLY a raw JSON object with no explanation, no markdown, no backticks:
 `;
 
   const raw = await callLLM(prompt, "ollama", 180000); // 3 minutes for large documents
-  const clean = raw
+  let clean = raw
     .replace(/```json/g, "")
     .replace(/```/g, "")
     .replace(/^[^{[]*/, "")
     .replace(/[^}\]]*$/, "")
     .trim();
 
-  return JSON.parse(clean);
-}
+  clean = clean.replace(/,(\s*[}\]])/g, "$1");
+
+    try {
+      return JSON.parse(clean);
+    } catch (err) {
+      console.error("Failed to parse course content:", clean);
+      return {
+        title: "Untitled Week",
+        description: "",
+        lessonNotes: [],
+        lessonSummary: { lesson: [], page: [] },
+        flashCards: [],
+        outdatedFlags: ["AI response could not be parsed. Please try uploading again."],
+      };
+    }
+  }
 
 async function checkOutdatedContent(week) {
   const contentText = JSON.stringify({
